@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>🌸 奇妙小屋 — 人格六维测评（24题）</title>
+
+<!-- Chart.js（国内一般可通过 jsDelivr 访问） -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  :root{
+    --bg:#fff6f8;
+    --card:#fff;
+    --accent:#ff6b9a;
+    --accent-2:#ffd7e2;
+    --muted:#6b6b6b;
+    --radius:14px;
+
+    /* 手机优先字体 */
+    --fz-title:22px;
+    --fz-subtitle:14px;
+    --fz-text:15px;
+    --fz-question:17px;
+  }
+
+  /* ========== 通用设置 ========== */
+  *{box-sizing:border-box;}
+  body{
+    background: linear-gradient(180deg, #fff6f8 0%, #fff 60%);
+    font-family: "PingFang SC","Microsoft YaHei","Noto Sans SC", Arial;
+    color:#222;
+    padding: 0;
+    margin: 0;
+    display:flex;
+    justify-content:center;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:760px;
+    padding:16px;
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:0 6px 18px rgba(255,107,154,0.08);
+    padding:18px;
+    margin-bottom:16px;
+  }
+
+  h1{font-size:var(--fz-title);margin:6px 0}
+  p{margin:8px 0;color:var(--muted);font-size:var(--fz-text)}
+
+  .center{text-align:center}
+
+  /* ===== 封面区域 ===== */
+  .hero{
+    background: linear-gradient(135deg, rgba(255,107,154,0.06), rgba(255,215,226,0.06));
+    border-radius:12px;
+    padding:24px 20px;
+  }
+
+  .hero .title{
+    font-size:20px;
+    font-weight:700;
+    color:var(--accent);
+  }
+  .hero .subtitle{
+    font-size:var(--fz-subtitle);
+    color:#444;
+    margin-top:8px;
+  }
+
+  .btn{
+    display:inline-block;
+    background:var(--accent);
+    color:#fff;
+    width:100%;
+    padding:14px 0;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+    border:none;
+    margin-top:10px;
+  }
+  .btn.secondary{
+    background:#fff;
+    color:var(--accent);
+    border:1px solid var(--accent-2);
+  }
+
+  /* ===== 进度条 ===== */
+  .progress-wrap{
+    height:12px;
+    background:var(--accent-2);
+    border-radius:999px;
+    overflow:hidden;
+    margin:12px 0;
+  }
+  .progress-bar{
+    height:100%;
+    background:linear-gradient(90deg,var(--accent),#ff9fb8);
+    width:0%;
+    transition:width .25s;
+  }
+
+  /* ===== 单题卡片 ===== */
+  .question-card{
+    padding:18px 14px;
+    border-radius:12px;
+    background:#fff;
+  }
+  .qnum{
+    color:var(--accent);
+    font-weight:700;
+    margin-bottom:8px;
+    font-size:14px;
+  }
+  .qtext{
+    font-size:var(--fz-question);
+    margin-bottom:14px;
+    line-height:1.5;
+  }
+
+  .choices{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .choice{
+    padding:14px 14px;
+    border-radius:12px;
+    background:#fff;
+    border:1px solid #f3dbe2;
+    cursor:pointer;
+    font-size:15px;
+  }
+  .choice strong{font-size:15px;}
+
+  .choice:active{
+    transform:scale(0.97);
+    background:#fff5f9;
+  }
+
+  /* ===== 结果页 ===== */
+  #result-area .chart-wrap{
+    width:100%;
+    max-width:480px;
+    height:380px;
+    margin:0 auto;
+    position:relative;
+  }
+
+  canvas#radarChart{
+    width:100% !important;
+    height:100% !important;
+  }
+
+  #text-result{
+    margin-top:14px;
+    padding:10px;
+    border-radius:10px;
+    background:#fff7fb;
+    border:1px solid #ffe6ef;
+  }
+
+  .result-title{
+    font-weight:800;
+    color:var(--accent);
+    font-size:18px;
+  }
+
+  .poster-actions{
+    display:flex;
+    gap:8px;
+    flex-direction:column;
+    margin-top:12px;
+  }
+  .btn.small{
+    padding:12px 0;
+    border-radius:12px;
+    font-size:15px;
+  }
+
+  /* ===== 手机端强化适配 ===== */
+  @media(max-width:520px){
+    :root{
+      --fz-title:20px;
+      --fz-question:16px;
+    }
+
+    .wrap{
+      padding:14px;
+    }
+
+    .card{
+      padding:16px 14px;
+    }
+
+    .hero{
+      padding:20px 16px;
+    }
+
+    .choice{
+      padding:12px;
+    }
+
+    #result-area .chart-wrap{
+      height:320px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- 封面 -->
+    <div id="cover" class="card hero center">
+      <div style="display:flex;align-items:center;gap:12px;justify-content:center;flex-direction:column">
+        <div style="font-size:44px">🌸</div>
+        <div class="title">奇妙小屋 · 人格六维测评</div>
+        <div class="subtitle">24 题短测 · 约 2 分钟 · 送你暖心的性格反馈 ✨</div>
+        <p style="max-width:560px;">本测评聚焦 6 大维度：创造力 / 分析力 / 社交性 / 行动力 / 领导力 / 稳定性。测试结果会生成雷达图与文字解析，并能导出专属海报。</p>
+        <div style="margin-top:10px">
+          <button class="btn" id="startBtn">开始测评 · 开始探索自己</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 进度条 -->
+    <div id="quiz-area" class="hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:700;color:var(--accent)">奇妙小屋 · 性格测试</div>
+            <div class="muted">每题均为 5 分制（非常符合 → 非常不符合）</div>
+          </div>
+          <div id="progress-percent" style="font-weight:700;color:var(--accent)">0%</div>
+        </div>
+        <div class="progress-wrap" style="margin-top:12px">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <!-- 题目插入点 -->
+        <div id="question-container" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <!-- 结果 -->
+    <div id="result-area" class="card hidden">
+      <div class="center">
+        <div class="result-title">🎀 你的六维人格报告</div>
+        <p class="muted">下面是根据你的答题生成的雷达图与温暖解析，你也可以生成海报保存/分享。</p>
+      </div>
+
+      <div class="chart-wrap center" style="margin-top:8px">
+        <canvas id="radarChart" width="480" height="400"></canvas>
+      </div>
+
+      <div id="text-result"></div>
+
+      <div class="poster-actions">
+        <button class="btn small" id="genPosterBtn">✨ 生成专属海报（PNG）</button>
+        <button class="btn small secondary" id="downloadPosterBtn" style="display:none">⬇️ 下载海报</button>
+        <button class="btn small secondary" id="restartBtn">↺ 重新测一次</button>
+      </div>
+
+      <p class="muted center" style="margin-top:10px">海报底部会自动标注：<strong>本测试来自：奇妙小屋商店</strong></p>
+    </div>
+
+  </div>
+
+<script>
+/* ===========================
+   数据与配置（可修改区域）
+   - 修改题目、维度名称、配色等请在下方注释里按说明修改
+   =========================== */
+
+const DIM_LABELS = ['创造力','分析力','社交性','行动力','领导力','稳定性'];
+
+/* 24 题：每维 4 题（顺序随意），每题归属 dim 字段
+   如需修改题库，请编辑下面的 questions 数组。
+   评分说明：按钮顺序为 [非常符合(5)、符合(4)、一般(3)、不符合(2)、非常不符合(1)]
+*/
+const questions = [
+  // 创造力（4）
+  { q: "我经常想到别人想不到的点子。", dim: "chuangzao" },
+  { q: "我喜欢尝试新奇的做法，享受创造过程。", dim: "chuangzao" },
+  { q: "我对艺术或创意类内容感到好奇并愿意投入。", dim: "chuangzao" },
+  { q: "我能把抽象想法转化为具体尝试。", dim: "chuangzao" },
+
+  // 分析力（4）
+  { q: "面对问题时，我会先拆解并分析原因。", dim: "fenxi" },
+  { q: "我常用逻辑和数据来支持自己的判断。", dim: "fenxi" },
+  { q: "我擅长把复杂信息整理成清晰结论。", dim: "fenxi" },
+  { q: "做决定前我会尽量权衡利弊。", dim: "fenxi" },
+
+  // 社交性（4）
+  { q: "与新朋友聊天我能很快找到共同话题。", dim: "shejiao" },
+  { q: "我在社交场合通常能让氛围活跃起来。", dim: "shejiao" },
+  { q: "我享受与人交流并从中获得能量。", dim: "shejiao" },
+  { q: "我容易理解别人的情绪与需求。", dim: "shejiao" },
+
+  // 行动力（4）
+  { q: "我会迅速把想法转化为行动。", dim: "xingdong" },
+  { q: "我在执行计划时能保持较高效率。", dim: "xingdong" },
+  { q: "我不容易拖延，遇到困难会立刻应对。", dim: "xingdong" },
+  { q: "我更倾向于马上尝试，而不是过度等待。", dim: "xingdong" },
+
+  // 领导力（4）
+  { q: "我愿意主动组织并带动他人完成任务。", dim: "lingdao" },
+  { q: "别人遇到问题会向我寻求建议或决策。", dim: "lingdao" },
+  { q: "我善于协调不同意见，推动团队前进。", dim: "lingdao" },
+  { q: "当需要承担责任时，我能站出来。", dim: "lingdao" },
+
+  // 稳定性（4）
+  { q: "在压力下我能保持冷静与专注。", dim: "wending" },
+  { q: "我情绪较为稳定，不易被小事干扰。", dim: "wending" },
+  { q: "遇到挫折时我能坚持并找到解决方式。", dim: "wending" },
+  { q: "我有耐心，能持续完成长期任务。", dim: "wending" }
+];
+
+/* 每维题目数量（当前每维为4题），如果你改了题目数量，后面换算分数需同步修改 */
+const QUESTIONS_PER_DIM = 4;
+
+/* ========== 全局状态 ========== */
+let currentIndex = 0;
+let totalQuestions = questions.length;
+
+/* 内部累计分（每题 1..5），每维最大分为 QUESTIONS_PER_DIM * 5（默认 20） */
+let rawScores = { chuangzao:0, fenxi:0, shejiao:0, xingdong:0, lingdao:0, wending:0 };
+
+/* Chart.js 实例引用（用于海报绘制时获取 canvas 图像） */
+let radarChart = null;
+
+/* ========== 页面元素 ========== */
+const coverEl = document.getElementById('cover');
+const quizArea = document.getElementById('quiz-area');
+const questionContainer = document.getElementById('question-container');
+const progressBar = document.getElementById('progress-bar');
+const progressPercent = document.getElementById('progress-percent');
+const resultArea = document.getElementById('result-area');
+const startBtn = document.getElementById('startBtn');
+const genPosterBtn = document.getElementById('genPosterBtn');
+const downloadPosterBtn = document.getElementById('downloadPosterBtn');
+const restartBtn = document.getElementById('restartBtn');
+
+/* ========== 事件绑定 ========== */
+startBtn.addEventListener('click', startQuiz);
+restartBtn.addEventListener('click', restartQuiz);
+genPosterBtn.addEventListener('click', generatePoster);
+downloadPosterBtn.addEventListener('click', downloadPoster);
+
+/* ========== 开始测评 ========== */
+function startQuiz(){
+  coverEl.classList.add('hidden');
+  quizArea.classList.remove('hidden');
+  currentIndex = 0;
+  // 清空分数
+  resetScores();
+  renderQuestion();
+  updateProgress();
+}
+
+/* ========== 重置分数 ========== */
+function resetScores(){
+  for (let k in rawScores) rawScores[k] = 0;
+}
+
+/* ========== 渲染单题页面 ========== */
+function renderQuestion(){
+  if (currentIndex >= totalQuestions){
+    showResult();
+    return;
+  }
+  const item = questions[currentIndex];
+  const qnum = currentIndex + 1;
+  // 构建 HTML
+  questionContainer.innerHTML = `
+    <div class="question-card">
+      <div class="qnum">第 ${qnum} / ${totalQuestions} 题 · ${DIM_LABELS[getDimIndex(item.dim)]} 🔍</div>
+      <div class="qtext"> ${emojiForDim(item.dim)} ${item.q}</div>
+      <div class="choices">
+        <div class="choice" onclick="choose(5)"><strong>🌟 非常符合</strong><div class="muted">（5 分）</div></div>
+        <div class="choice" onclick="choose(4)"><strong>🙂 符合</strong><div class="muted">（4 分）</div></div>
+        <div class="choice" onclick="choose(3)"><strong>😐 一般</strong><div class="muted">（3 分）</div></div>
+        <div class="choice" onclick="choose(2)"><strong>🙁 不符合</strong><div class="muted">（2 分）</div></div>
+        <div class="choice" onclick="choose(1)"><strong>❗ 非常不符合</strong><div class="muted">（1 分）</div></div>
+      </div>
+    </div>
+  `;
+}
+
+/* 辅助：根据 dim 返回索引（用于 DIM_LABELS） */
+function getDimIndex(dim){
+  const map = { chuangzao:0, fenxi:1, shejiao:2, xingdong:3, lingdao:4, wending:5 };
+  return map[dim] ?? 0;
+}
+
+/* 返回每个维度的小 emoji（可自定义） */
+function emojiForDim(dim){
+  const m = {
+    chuangzao: '🎨',
+    fenxi: '🧠',
+    shejiao: '💬',
+    xingdong: '⚡',
+    lingdao: '🏷️',
+    wending: '🛡️'
+  };
+  return m[dim] || '✨';
+}
+
+/* ========== 用户选择答案 ========== */
+function choose(score){
+  const dim = questions[currentIndex].dim;
+  rawScores[dim] += Number(score);
+  currentIndex++;
+  updateProgress();
+  renderQuestion();
+}
+
+/* ========== 进度条更新 ========== */
+function updateProgress(){
+  const percent = Math.round((currentIndex / totalQuestions) * 100);
+  progressBar.style.width = percent + '%';
+  progressPercent.textContent = percent + '%';
+}
+
+/* ========== 显示结果 ========== */
+function showResult(){
+  quizArea.classList.add('hidden');
+  resultArea.classList.remove('hidden');
+
+  // 计算每维 10 分制分数（每维满分 = QUESTIONS_PER_DIM * 5）
+  const maxPerDim = QUESTIONS_PER_DIM * 5;
+  const result10 = {
+    chuangzao: (rawScores.chuangzao / maxPerDim * 10),
+    fenxi:     (rawScores.fenxi / maxPerDim * 10),
+    shejiao:   (rawScores.shejiao / maxPerDim * 10),
+    xingdong:  (rawScores.xingdong / maxPerDim * 10),
+    lingdao:   (rawScores.lingdao / maxPerDim * 10),
+    wending:   (rawScores.wending / maxPerDim * 10)
+  };
+
+  // 保留一位小数显示
+  for (let k in result10) result10[k] = Math.round(result10[k]*10)/10;
+
+  // 渲染雷达图与文本
+  renderRadar(result10);
+  renderText(result10);
+}
+
+/* ========== 渲染 Chart.js 雷达图 ========== */
+function renderRadar(r){
+  const ctx = document.getElementById('radarChart').getContext('2d');
+
+  // 如果已有图表，先销毁
+  if (radarChart) radarChart.destroy();
+
+  radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: DIM_LABELS,
+      datasets: [{
+        // 不显示 label 文本（符合你要求）
+        data: [
+          r.chuangzao, r.fenxi, r.shejiao, r.xingdong, r.lingdao, r.wending
+        ],
+        fill: true,
+        backgroundColor: 'rgba(255,107,154,0.18)',
+        borderColor: '#ff6b9a',
+        pointBackgroundColor:'#fff',
+        pointBorderColor:'#ff6b9a',
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          suggestedMin: 0,
+          suggestedMax: 10,
+          ticks: { stepSize: 2, color: '#666' },
+          grid: { color: 'rgba(0,0,0,0.06)' },
+          angleLines: { color: 'rgba(0,0,0,0.06)' },
+          pointLabels: { color: '#444', font: { size: 13 } }
+        }
+      }
+    }
+  });
+}
+
+/* ========== 渲染正向的文本解析（友好风格） ========== */
+function renderText(r){
+  function friendly(score, dimName){
+    if (score >= 8) {
+      return `你的${dimName}非常出色 🌟，这是你的一个核心优势，值得自豪！在未来可以把它当作你创造机会与影响力的力量源。`;
+    } else if (score >= 5) {
+      return `你的${dimName}表现稳健 😊，有很好的基础与潜力。若想更进一步，稍微针对性练习即可收获明显提升。`;
+    } else {
+      return `你的${dimName}目前相对柔和 ☁️，这同样是好事——你有极大的成长空间，慢慢培养会带来惊喜的改变。`;
+    }
+  }
+
+  const html = `
+    <div id="cards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px">
+      ${makeCard('创造力', r.chuangzao)}
+      ${makeCard('分析力', r.fenxi)}
+      ${makeCard('社交性', r.shejiao)}
+      ${makeCard('行动力', r.xingdong)}
+      ${makeCard('领导力', r.lingdao)}
+      ${makeCard('稳定性', r.wending)}
+    </div>
+
+    <div style="margin-top:12px;padding:12px;border-radius:10px;background:linear-gradient(90deg,#fff,#fff7fb);border:1px solid #ffe6ef">
+      <strong>总体温馨提示：</strong>
+      <span style="color:#555">本测评为自我探索工具，仅供参考。人的特质会随着环境与努力改变，保持好奇与温柔对待自己，你会越来越好 🌱</span>
+    </div>
+  `;
+
+  function makeCard(name, score){
+    // 友好短评
+    const desc = friendly(score, name);
+    return `
+      <div style="padding:10px;border-radius:10px;background:#fff;border:1px solid #fff3f6">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800;color:var(--accent)">${name}</div>
+          <div style="font-weight:800;font-size:18px">${score}/10</div>
+        </div>
+        <div style="margin-top:8px;color:#555;font-size:14px">${desc}</div>
+      </div>
+    `;
+  }
+
+  document.getElementById('text-result').innerHTML = html;
+}
+
+/* ========== 生成海报（把雷达图画到新的 canvas，再加文字与来源） ========== */
+let posterDataUrl = null;
+function generatePoster(){
+  // 准备：获取雷达图 canvas 的图片（Chart.js 渲染在 canvas）
+  const chartCanvas = document.getElementById('radarChart');
+  const chartDataUrl = chartCanvas.toDataURL('image/png');
+
+  // 创建海报 canvas（建议 1200 x 1600 像素）
+  const W = 1200, H = 1600;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+
+  // 背景
+  ctx.fillStyle = '#fff6f8';
+  ctx.fillRect(0,0,W,H);
+
+  // 顶部装饰
+  // 轻柔渐变条
+  const g = ctx.createLinearGradient(0,0, W, 0);
+  g.addColorStop(0, '#fff0f4');
+  g.addColorStop(1, '#fff8f7');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,220);
+
+  // 标题
+  ctx.fillStyle = '#ff6b9a';
+  ctx.font = 'bold 44px "Microsoft YaHei"';
+  ctx.fillText('🌸 奇妙小屋 — 人格六维测试', 70, 90);
+
+  ctx.fillStyle = '#444';
+  ctx.font = '24px "Microsoft YaHei"';
+  ctx.fillText('你的专属性格雷达图', 70, 140);
+
+  // 插入雷达图（缩放并居中）
+  const img = new Image();
+  img.onload = function(){
+    // 计算大小和位置
+    const imgW = 820, imgH = 650;
+    const imgX = (W - imgW)/2;
+    const imgY = 180;
+    // 白色卡片背景
+    ctx.fillStyle = '#fff';
+    roundRect(ctx, imgX-18, imgY-18, imgW+36, imgH+36, 20, true, false);
+    // 绘制图像
+    ctx.drawImage(img, imgX, imgY, imgW, imgH);
+
+    // 在图下方写解释（取页面上解析节点）
+    ctx.fillStyle = '#333';
+    ctx.font = '22px "Microsoft YaHei"';
+
+    // 摘取解析文案（第一个维度短句示例）
+    // 为了保证海报文案简洁，我们把每维 name+score用于显示
+    const scoresText = [
+      `创造力： ${getResultValue('chuangzao')}/10`,
+      `分析力： ${getResultValue('fenxi')}/10`,
+      `社交性： ${getResultValue('shejiao')}/10`,
+      `行动力： ${getResultValue('xingdong')}/10`,
+      `领导力： ${getResultValue('lingdao')}/10`,
+      `稳定性： ${getResultValue('wending')}/10`
+    ];
+
+    // 绘制每一项
+    let startY = imgY + imgH + 50;
+    ctx.font = '20px "Microsoft YaHei"';
+    for (let i=0;i<scoresText.length;i++){
+      const tx = scoresText[i];
+      const x = 120 + (i%2)*520;
+      const y = startY + Math.floor(i/2)*42;
+      ctx.fillText(tx, x, y);
+    }
+
+    // 温暖总结（从页面生成）
+    ctx.font = '20px "Microsoft YaHei"';
+    ctx.fillStyle = '#666';
+    const summary = getWarmSummary();
+    wrapText(ctx, summary, 120, startY + 140, 960, 28);
+
+    // 底部来源
+    ctx.fillStyle = '#ff6b9a';
+    ctx.font = '20px "Microsoft YaHei"';
+    ctx.fillText('本测试来自：奇妙小屋商店', 70, H - 70);
+
+    // 小版权字
+    ctx.fillStyle = '#999';
+    ctx.font = '14px "Microsoft YaHei"';
+    ctx.fillText('欢迎分享你的海报，让更多朋友一起来探索人格的惊喜 ✨', 70, H - 40);
+
+    // 导出 DataURL
+    posterDataUrl = c.toDataURL('image/png');
+    downloadPosterBtn.style.display = 'inline-block';
+    downloadPosterBtn.dataset.url = posterDataUrl;
+    alert('海报已生成，可点击【下载海报】保存到本地。');
+  };
+  img.src = chartDataUrl;
+
+  // 辅助：画圆角矩形
+  function roundRect(ctx, x, y, w, h, r, fill, stroke){
+    if (typeof r === 'undefined') r = 5;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y,   x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x,  y + h, r);
+    ctx.arcTo(x,  y + h, x,  y,   r);
+    ctx.arcTo(x,  y,   x + w, y,   r);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+
+  // wrapText 辅助（自动换行）
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    const words = text.split('');
+    let line = '';
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n];
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0) {
+        ctx.fillText(line, x, y);
+        line = words[n];
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, y);
+  }
+}
+
+/* 返回每维当前值（字符串） */
+function getResultValue(k){
+  // 从页面上获取值（在 renderText 时我们绘制了 cards）
+  // 为安全，优先从 rawScores 计算（与 showResult 的计算方式一致）
+  const maxPerDim = QUESTIONS_PER_DIM * 5;
+  const val = Math.round((rawScores[k] / maxPerDim * 10)*10)/10;
+  return (isNaN(val) ? 0 : val);
+}
+
+/* 获取友好总结 (用于海报) */
+function getWarmSummary(){
+  // 这里我们生成一段简短积极的海报说明
+  // 也可以改成从 renderText 中提取更长的句子
+  return '这份报告以 6 大维度展示你的性格倾向——无“好坏”之分，只有了解与成长。愿你带着温柔与好奇，继续探索更完整的自我。';
+}
+
+/* ========== 下载海报 ========== */
+function downloadPoster(){
+  const url = downloadPosterBtn.dataset.url;
+  if (!url) { alert('请先生成海报'); return; }
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '奇妙小屋_性格海报.png';
+  a.click();
+}
+
+/* ========== 重新测评 ========== */
+function restartQuiz(){
+  // 回到封面或直接重新开始
+  resultArea.classList.add('hidden');
+  coverEl.classList.remove('hidden');
+  quizArea.classList.add('hidden');
+  downloadPosterBtn.style.display = 'none';
+  posterDataUrl = null;
+  resetScores();
+}
+
+/* ========== 页面加载时预处理（可选） ========== */
+/* 如果你希望页面首次加载直接显示封面，可不做操作。 */
+/* 另外可绑定键盘左右切换等（此版本为简单单击式交互） */
+
+</script>
+
+<!-- ========== 结束 ==========
+     修改说明（简明）：
+     1) 修改题库：编辑上方 questions 数组（每项包含 q 文本与 dim 字段）。
+     2) 改维度名称：修改 DIM_LABELS 数组。
+     3) 每维题数若变，更新 QUESTIONS_PER_DIM 的值以保证 10 分制换算正确。
+     4) 更改视觉：调整 :root 中的 --accent / --bg 变量或 CSS 样式。
+     5) 海报文案：编辑 getWarmSummary() 返回的字符串或海报绘制区的文本。
+     6) 若要把页面部署上线：把该文件上传到 GitHub Pages / Netlify / Vercel 即可（免费）。
+   ======================================== -->
+</body>
+</html>
